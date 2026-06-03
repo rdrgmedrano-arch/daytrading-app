@@ -1367,6 +1367,13 @@ select option{background:#0d1220;color:var(--text)}
 </main>
 
 <script type="module">
+// ── IMPORTS FIREBASE (devem vir no topo do módulo) ────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// Variáveis Firebase declaradas cedo (inicializadas no bloco Firebase antes do INIT)
+let _db, _dbRef, _fbReady = false, _saveTimer = null;
+
 // ── CALCULADORA FOREX ────────────────────────────────────────────────────────
 const C_PARES = {
   EURUSD:{pipSize:0.0001,lotSize:100000,quote:'USD'},
@@ -1479,73 +1486,6 @@ function initCalculadora(){
     document.getElementById(id).addEventListener('input',calcLote);
   });
   calcLote();
-}
-
-// ── FIREBASE ─────────────────────────────────────────────────────────────────
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const _fbConfig = {
-  apiKey: "AIzaSyBdJlBF2WSF6w2lppU1sM4SPh-p6cE-mRA",
-  authDomain: "copa-2026-album-79fb4.firebaseapp.com",
-  databaseURL: "https://copa-2026-album-79fb4-default-rtdb.firebaseio.com",
-  projectId: "copa-2026-album-79fb4",
-  storageBucket: "copa-2026-album-79fb4.appspot.com",
-  messagingSenderId: "1093315680173",
-  appId: "1:1093315680173:web:3709411715457eb6357324"
-};
-const _fbApp = initializeApp(_fbConfig, "daytrading");
-const _db = getDatabase(_fbApp);
-const _dbRef = ref(_db, 'daytrading');
-
-let _fbReady = false;
-let _saveTimer = null;
-
-function setSyncStatus(s) {
-  const el = document.getElementById("sync-fb");
-  if (!el) return;
-  if (s === 'ok')     { el.textContent = "✅ sync"; el.style.color = "#00d4aa"; }
-  if (s === 'saving') { el.textContent = "⏳ saving..."; el.style.color = "#f0c040"; }
-  if (s === 'off')    { el.textContent = "❌ offline"; el.style.color = "#ff4466"; }
-}
-
-// Carrega tudo do Firebase na inicialização
-onValue(_dbRef, (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    trades  = data.trades  || [];
-    contas  = data.contas  && data.contas.length ? data.contas : ["ttp1","ttp2","ttp3","ttp4"];
-    if (data.config) config = { ...config, ...data.config };
-  } else {
-    // Primeira vez: dados padrão
-    trades = DEFAULT_TRADES;
-    contas = ["ttp1","ttp2","ttp3","ttp4"];
-  }
-  _fbReady = true;
-  setSyncStatus('ok');
-  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
-  render(); renderCalendario();
-}, (err) => {
-  setSyncStatus('off');
-  // Fallback: localStorage
-  try { const r = localStorage.getItem(SK); trades = r ? JSON.parse(r) : DEFAULT_TRADES; } catch { trades = DEFAULT_TRADES; }
-  try { const c = localStorage.getItem(SK_CONTAS); contas = c ? JSON.parse(c) : ["ttp1","ttp2","ttp3","ttp4"]; } catch { contas = ["ttp1","ttp2","ttp3","ttp4"]; }
-  try { const g = localStorage.getItem(SK_CFG); if (g) config = { ...config, ...JSON.parse(g) }; } catch {}
-  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
-  render(); renderCalendario();
-});
-
-function _fbSave() {
-  clearTimeout(_saveTimer);
-  setSyncStatus('saving');
-  _saveTimer = setTimeout(() => {
-    set(_dbRef, { trades, contas, config })
-      .then(() => setSyncStatus('ok'))
-      .catch(() => {
-        setSyncStatus('off');
-        try { localStorage.setItem(SK, JSON.stringify(trades)); } catch {}
-      });
-  }, 600);
 }
 
 // ── CONSTANTES ─────────────────────────────────────────────────────────────
@@ -2281,12 +2221,71 @@ function renderCalendario(){
 
 function render(){renderDashboard();renderTable();}
 
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+const _fbConfig = {
+  apiKey: "AIzaSyBdJlBF2WSF6w2lppU1sM4SPh-p6cE-mRA",
+  authDomain: "copa-2026-album-79fb4.firebaseapp.com",
+  databaseURL: "https://copa-2026-album-79fb4-default-rtdb.firebaseio.com",
+  projectId: "copa-2026-album-79fb4",
+  storageBucket: "copa-2026-album-79fb4.appspot.com",
+  messagingSenderId: "1093315680173",
+  appId: "1:1093315680173:web:3709411715457eb6357324"
+};
+const _fbApp = initializeApp(_fbConfig, "daytrading");
+_db    = getDatabase(_fbApp);
+_dbRef = ref(_db, 'daytrading');
+
+function setSyncStatus(s) {
+  const el = document.getElementById("sync-fb");
+  if (!el) return;
+  if (s === 'ok')     { el.textContent = "✅ sync"; el.style.color = "#00d4aa"; }
+  if (s === 'saving') { el.textContent = "⏳ saving..."; el.style.color = "#f0c040"; }
+  if (s === 'off')    { el.textContent = "❌ offline"; el.style.color = "#ff4466"; }
+}
+
+function _fbSave() {
+  clearTimeout(_saveTimer);
+  setSyncStatus('saving');
+  _saveTimer = setTimeout(() => {
+    set(_dbRef, { trades, contas, config })
+      .then(() => setSyncStatus('ok'))
+      .catch(() => {
+        setSyncStatus('off');
+        try { localStorage.setItem(SK, JSON.stringify(trades)); } catch {}
+      });
+  }, 600);
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
-document.getElementById("btn-new-global").onclick=()=>openForm();
-// load(), loadContas(), loadConfig() são chamados pelo onValue do Firebase
-buildContaSelects();buildDashContaSelect();buildAnoSelect();buildCalContaSelect();
+document.getElementById("btn-new-global").onclick = () => openForm();
+buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
 initCalculadora();
 fetchRate();
+
+// Firebase: carrega dados (onValue registrado aqui, depois de todas as funções)
+onValue(_dbRef, (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    trades = data.trades || [];
+    contas = data.contas && data.contas.length ? data.contas : ["ttp1","ttp2","ttp3","ttp4"];
+    if (data.config) config = { ...config, ...data.config };
+  } else {
+    trades = DEFAULT_TRADES;
+    contas = ["ttp1","ttp2","ttp3","ttp4"];
+  }
+  setSyncStatus('ok');
+  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
+  render();
+  renderCalendario();
+}, () => {
+  setSyncStatus('off');
+  try { const r = localStorage.getItem(SK); trades = r ? JSON.parse(r) : DEFAULT_TRADES; } catch { trades = DEFAULT_TRADES; }
+  try { const c = localStorage.getItem(SK_CONTAS); contas = c ? JSON.parse(c) : ["ttp1","ttp2","ttp3","ttp4"]; } catch { contas = ["ttp1","ttp2","ttp3","ttp4"]; }
+  try { const g = localStorage.getItem(SK_CFG); if (g) config = { ...config, ...JSON.parse(g) }; } catch {}
+  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
+  render();
+  renderCalendario();
+});
 
 // ── EXPOR FUNÇÕES AO ESCOPO GLOBAL (necessário para type="module") ────────────
 Object.assign(window, {
