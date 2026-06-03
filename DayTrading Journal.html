@@ -1670,7 +1670,6 @@ function fmtBrl(v){if(v===null)return"…";const s=Math.abs(v).toLocaleString("p
 function load(){} // carregado pelo onValue do Firebase acima
 function save(){ _fbSave(); try{localStorage.setItem(SK,JSON.stringify(trades));}catch{} }
 function getPnl(t){return t.pnl!==undefined?t.pnl:(t.direcao==="LONG"?1:-1)*(t.saida-t.entrada)*(t.contratos||1);}
-function getPnl(t){return t.pnl!==undefined?t.pnl:(t.direcao==="LONG"?1:-1)*(t.saida-t.entrada)*(t.contratos||1);}
 function fmt(v){const s=Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});return(v<0?"-":"")+"US$ "+s;}
 function fmtS(v){return(v>=0?"+":"")+`US$ ${Math.abs(v).toFixed(2)}`;}
 
@@ -2288,6 +2287,26 @@ document.getElementById("btn-new-global").onclick=()=>openForm();
 buildContaSelects();buildDashContaSelect();buildAnoSelect();buildCalContaSelect();
 initCalculadora();
 fetchRate();
+
+// ── EXPOR FUNÇÕES AO ESCOPO GLOBAL (necessário para type="module") ────────────
+Object.assign(window, {
+  calcLote, initCalculadora,
+  setSyncStatus,
+  saveConfig, fillConfigModal, loadConfig, loadContas, saveContas,
+  buildContaSelects, openModal, closeModal, renderContasList, addConta, removeConta,
+  fetchRate, toBrl, fmtBrl,
+  load, save, getPnl, fmt, fmtS,
+  filteredDash, filteredTrades, buildAnoSelect, buildDashContaSelect,
+  clearDashFilters, clearTradeFilters,
+  switchTab, goTab,
+  mkChart, calcContaStats, renderAvisos, renderContasCards,
+  renderDashboard, renderTable,
+  toggleRow, toggleAll, updateCbAll, updateBulkBar,
+  clearSelection, bulkDelete,
+  openForm, submitForm, closeForm, editTrade, confirmDel, doDel,
+  buildCalContaSelect, calPrev, calNext, calToday, renderCalendario,
+  render,
+});
 </script>
 
 
