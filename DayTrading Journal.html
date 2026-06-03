@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0055)file:///C:/Users/Rodrigo/Desktop/DayTrading_claude.html -->
 <html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DayTrading Journal</title>
-<script src="./DayTrading Journal_files/chart.umd.min.js.download"></script>
-<link href="./DayTrading Journal_files/css2" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -450,12 +449,13 @@ select option{background:#0d1220;color:var(--text)}
       <button class="tab" onclick="switchTab(&#39;calculadora&#39;,this)">calculadora</button>
     </div>
     <div class="header-right">
-      <button class="btn-cfg" onclick="openModal(&#39;modal-config&#39;)">⚙️ regras da mesa</button>
+      <button class="btn-cfg" onclick="openModal('modal-config')">⚙️ regras da mesa</button>
       <div class="fx-badge">
         <div class="fx-dot"></div>
         <span class="fx-label">USD/BRL</span>
         <span id="fx-rate">R$ 5.00</span>
       </div>
+      <span id="sync-fb" style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#f0c040;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:rgba(0,0,0,.3)">⏳ conectando...</span>
       <button class="btn-new" id="btn-new-global">+ novo trade</button>
     </div>
   </div>
@@ -1366,7 +1366,7 @@ select option{background:#0d1220;color:var(--text)}
 
 </main>
 
-<script>
+<script type="module">
 // ── CALCULADORA FOREX ────────────────────────────────────────────────────────
 const C_PARES = {
   EURUSD:{pipSize:0.0001,lotSize:100000,quote:'USD'},
@@ -1481,6 +1481,73 @@ function initCalculadora(){
   calcLote();
 }
 
+// ── FIREBASE ─────────────────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const _fbConfig = {
+  apiKey: "AIzaSyBdJlBF2WSF6w2lppU1sM4SPh-p6cE-mRA",
+  authDomain: "copa-2026-album-79fb4.firebaseapp.com",
+  databaseURL: "https://copa-2026-album-79fb4-default-rtdb.firebaseio.com",
+  projectId: "copa-2026-album-79fb4",
+  storageBucket: "copa-2026-album-79fb4.appspot.com",
+  messagingSenderId: "1093315680173",
+  appId: "1:1093315680173:web:3709411715457eb6357324"
+};
+const _fbApp = initializeApp(_fbConfig, "daytrading");
+const _db = getDatabase(_fbApp);
+const _dbRef = ref(_db, 'daytrading');
+
+let _fbReady = false;
+let _saveTimer = null;
+
+function setSyncStatus(s) {
+  const el = document.getElementById("sync-fb");
+  if (!el) return;
+  if (s === 'ok')     { el.textContent = "✅ sync"; el.style.color = "#00d4aa"; }
+  if (s === 'saving') { el.textContent = "⏳ saving..."; el.style.color = "#f0c040"; }
+  if (s === 'off')    { el.textContent = "❌ offline"; el.style.color = "#ff4466"; }
+}
+
+// Carrega tudo do Firebase na inicialização
+onValue(_dbRef, (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    trades  = data.trades  || [];
+    contas  = data.contas  && data.contas.length ? data.contas : ["ttp1","ttp2","ttp3","ttp4"];
+    if (data.config) config = { ...config, ...data.config };
+  } else {
+    // Primeira vez: dados padrão
+    trades = DEFAULT_TRADES;
+    contas = ["ttp1","ttp2","ttp3","ttp4"];
+  }
+  _fbReady = true;
+  setSyncStatus('ok');
+  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
+  render(); renderCalendario();
+}, (err) => {
+  setSyncStatus('off');
+  // Fallback: localStorage
+  try { const r = localStorage.getItem(SK); trades = r ? JSON.parse(r) : DEFAULT_TRADES; } catch { trades = DEFAULT_TRADES; }
+  try { const c = localStorage.getItem(SK_CONTAS); contas = c ? JSON.parse(c) : ["ttp1","ttp2","ttp3","ttp4"]; } catch { contas = ["ttp1","ttp2","ttp3","ttp4"]; }
+  try { const g = localStorage.getItem(SK_CFG); if (g) config = { ...config, ...JSON.parse(g) }; } catch {}
+  buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
+  render(); renderCalendario();
+});
+
+function _fbSave() {
+  clearTimeout(_saveTimer);
+  setSyncStatus('saving');
+  _saveTimer = setTimeout(() => {
+    set(_dbRef, { trades, contas, config })
+      .then(() => setSyncStatus('ok'))
+      .catch(() => {
+        setSyncStatus('off');
+        try { localStorage.setItem(SK, JSON.stringify(trades)); } catch {}
+      });
+  }, 600);
+}
+
 // ── CONSTANTES ─────────────────────────────────────────────────────────────
 const SK       = "tradingpit_light_v2";
 const SK_CONTAS= "tradingpit_contas_v1";
@@ -1526,14 +1593,13 @@ let trades=[], editId=null, charts={}, usdBrl=null, contas=[], selectedIds=new S
 let config={meta:500, stopDiario:100, stopsSeq:2, nContasMeta:4};
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-function loadConfig(){
-  try{const s=JSON.parse(localStorage.getItem(SK_CFG));if(s)config={...config,...s};}catch{}
-}
+function loadConfig(){} // carregado pelo onValue do Firebase acima
 function saveConfig(){
   config.meta       = parseFloat(document.getElementById("cfg-meta").value)||500;
   config.stopDiario = parseFloat(document.getElementById("cfg-stop").value)||100;
   config.stopsSeq   = parseInt(document.getElementById("cfg-stops-seq").value)||2;
   config.nContasMeta= parseInt(document.getElementById("cfg-ncontas").value)||4;
+  _fbSave();
   try{localStorage.setItem(SK_CFG,JSON.stringify(config));}catch{}
   closeModal("modal-config");
   render();
@@ -1550,7 +1616,7 @@ function loadContas(){
   try{const s=JSON.parse(localStorage.getItem(SK_CONTAS));contas=s&&s.length?s:["ttp1","ttp2","ttp3","ttp4"];}
   catch{contas=["ttp1","ttp2","ttp3","ttp4"];}
 }
-function saveContas(){try{localStorage.setItem(SK_CONTAS,JSON.stringify(contas));}catch{}}
+function saveContas(){ _fbSave(); try{localStorage.setItem(SK_CONTAS,JSON.stringify(contas));}catch{} }
 function buildContaSelects(){
   ["dashFilterConta","filterContaTrades"].forEach(id=>{
     const sel=document.getElementById(id);const val=sel.value;
@@ -1601,14 +1667,9 @@ function toBrl(v){return usdBrl?v*usdBrl:null;}
 function fmtBrl(v){if(v===null)return"…";const s=Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});return(v<0?"-":"")+"R$ "+s;}
 
 // ── DADOS ────────────────────────────────────────────────────────────────────
-function load(){
-  try{
-    const raw=localStorage.getItem(SK);
-    if(raw===null){trades=DEFAULT_TRADES;} // primeira vez: carrega exemplos
-    else{trades=JSON.parse(raw)||[];}      // já usou antes: respeita mesmo se vazio
-  }catch{trades=[];}
-}
-function save(){try{localStorage.setItem(SK,JSON.stringify(trades));}catch{}}
+function load(){} // carregado pelo onValue do Firebase acima
+function save(){ _fbSave(); try{localStorage.setItem(SK,JSON.stringify(trades));}catch{} }
+function getPnl(t){return t.pnl!==undefined?t.pnl:(t.direcao==="LONG"?1:-1)*(t.saida-t.entrada)*(t.contratos||1);}
 function getPnl(t){return t.pnl!==undefined?t.pnl:(t.direcao==="LONG"?1:-1)*(t.saida-t.entrada)*(t.contratos||1);}
 function fmt(v){const s=Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});return(v<0?"-":"")+"US$ "+s;}
 function fmtS(v){return(v>=0?"+":"")+`US$ ${Math.abs(v).toFixed(2)}`;}
@@ -2223,7 +2284,7 @@ function render(){renderDashboard();renderTable();}
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.getElementById("btn-new-global").onclick=()=>openForm();
-load();loadContas();loadConfig();
+// load(), loadContas(), loadConfig() são chamados pelo onValue do Firebase
 buildContaSelects();buildDashContaSelect();buildAnoSelect();buildCalContaSelect();
 initCalculadora();
 fetchRate();
