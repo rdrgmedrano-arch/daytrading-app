@@ -37,38 +37,104 @@ body.light header {
 }
 body.light .tabs { background: rgba(0,0,0,.05); border-color: var(--line); }
 body.light .tab { color: var(--s4); }
-body.light .tab.active { background: linear-gradient(180deg, #dededb 0%, #ebebE8 100%); color: var(--gold); }
+body.light .tab.active { background: linear-gradient(180deg, #dededb 0%, #ebebE8 100%); color: var(--gold); box-shadow: none; }
 body.light .fx-badge { background: rgba(0,0,0,.05); border-color: var(--line); }
-body.light .btn-cfg { border-color: var(--line); color: var(--s4); }
+body.light .btn-cfg { border-color: var(--line); color: var(--s4); background: rgba(0,0,0,.04); }
 body.light .btn-cfg:hover { border-color: var(--gold); color: var(--gold); }
-body.light .avisos-panel {
-  background: linear-gradient(160deg, #EAEAE6 0%, #F0F0ED 60%, #F8F8F6 100%);
-  border-color: var(--line);
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
-}
+
+/* Cards, KPIs, gráficos */
 body.light .card,
 body.light .kpi,
 body.light .chart-card,
+body.light .cal-chart-card,
 body.light .conta-card,
 body.light .trades-filters,
-body.light .modal-box {
-  background: linear-gradient(160deg, #EAEAE6 0%, #F0F0ED 50%, #F8F8F6 100%);
+body.light .modal-box,
+body.light .calc-card,
+body.light .calc-result,
+body.light .calc-form,
+body.light .calc-info {
+  background: #F0F0ED;
   border-color: var(--line);
   box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  color: var(--text);
 }
 body.light .kpi:hover, body.light .conta-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); }
 body.light .kpi-brl { border-top-color: var(--line2); }
+body.light .kpi-label, body.light .chart-title { color: var(--s4); }
+body.light .kpi-val { color: var(--text); }
+
+/* Avisos */
+body.light .avisos-panel {
+  background: #F0F0ED;
+  border-color: var(--line);
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+body.light .aviso-ok { background: rgba(0,0,0,.04); border-color: var(--line); }
+body.light .aviso-stop { background: rgba(255,68,102,.06); }
+body.light .aviso-meta { background: rgba(0,149,110,.06); }
+body.light .aviso-all4 { background: rgba(176,136,0,.08); }
+body.light .aviso-body { color: #555; }
+body.light .aviso-title { color: var(--text); }
+
+/* Contas */
 body.light .conta-card.meta-ok { border-color: rgba(0,149,110,.4); box-shadow: 0 0 12px rgba(0,149,110,.08); }
 body.light .progress-bar, body.light .conta-progress { background: var(--line); }
 body.light .conta-resumo { background: rgba(0,0,0,.03); border-color: var(--line); }
-body.light .dash-filters select, body.light .trades-filters select {
-  background: linear-gradient(180deg, #EAEAE6 0%, #F8F8F6 100%);
+body.light .conta-resumo-title { color: var(--s4); }
+body.light .conta-card-stat { background: rgba(0,0,0,.05); color: var(--text); }
+body.light .conta-name { color: var(--text); }
+
+/* Selects e filtros */
+body.light select,
+body.light .dash-filters select,
+body.light .trades-filters select,
+body.light .cal-filters select {
+  background: #F8F8F6;
   border-color: var(--line);
   color: var(--text);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%233a6090' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
 }
-body.light .trade-row { background: rgba(0,0,0,.02); border-color: var(--line); }
-body.light .trade-row:hover { background: rgba(0,0,0,.04); }
+body.light select option { background: #F8F8F6; color: var(--text); }
+
+/* Tabela de trades */
+body.light .trades-table-wrap { background: #F0F0ED; border-color: var(--line); border-radius: 12px; }
+body.light .trades-table-wrap table { background: transparent; }
+body.light .trade-header { background: #EAEAE6; color: var(--s4); border-bottom-color: var(--line); }
+body.light .trade-header th { color: var(--s4); }
+body.light .trade-row { background: #F8F8F6; border-color: var(--line); color: var(--text); }
+body.light .trade-row:hover { background: #EAEAE6; }
+body.light .trade-row td { color: var(--text); border-bottom-color: var(--line); }
+body.light .trade-footer { background: #EAEAE6; border-top-color: var(--line); color: var(--text); }
+body.light .trades-table { background: transparent; }
+body.light input[type="checkbox"] { accent-color: var(--b2); }
+body.light .bulk-bar { background: #EAEAE6; border-color: var(--line); color: var(--text); }
+
+/* Calculadora */
+body.light .calc-section { color: var(--text); }
+body.light .calc-section h2 { color: var(--gold); }
+body.light .calc-section p { color: var(--s4); }
+body.light .calc-form { background: #0d1220; } /* mantém escuro por contraste */
+body.light .calc-result-main { background: rgba(0,149,110,.08); border-color: rgba(0,149,110,.3); }
+body.light .calc-result-main .result-val { color: var(--b2); }
+body.light .calc-disclaimer { color: var(--s4); background: rgba(0,0,0,.04); border-color: var(--line); }
+body.light .calc-ref { color: var(--s4); }
+
+/* Calendário */
+body.light .cal-day { background: #F0F0ED; border-color: var(--line); color: var(--text); }
+body.light .cal-day:hover { background: #E8E8E4; }
+body.light .cal-day-num { color: var(--text); }
+body.light .cal-day.today { border-color: var(--b2); background: rgba(0,149,110,.05); }
+body.light .cal-header-cell { color: var(--s4); }
+body.light .cal-kpi { background: #0d1220; } /* mantém escuro por contraste com números */
+body.light .cal-nav-btn { background: #EAEAE6; border-color: var(--line); color: var(--text); }
+body.light .cal-nav-btn:hover { border-color: var(--b2); color: var(--b2); }
+body.light .cal-month-label { color: var(--gold); }
+body.light .cal-today-btn { background: #EAEAE6; border-color: var(--line); color: var(--text); }
+
+/* Modal */
+body.light .modal-overlay { background: rgba(200,200,190,.7); }
+body.light .modal-title { color: var(--text); border-bottom-color: var(--line); }
+body.light .form-group label { color: var(--s4); }
 body.light .form-group input,
 body.light .form-group select,
 body.light .form-group textarea {
@@ -76,16 +142,13 @@ body.light .form-group textarea {
   border-color: var(--line);
   color: var(--text);
 }
-body.light .modal-overlay { background: rgba(200,200,190,.7); }
-body.light .aviso-ok { background: rgba(0,0,0,.04); }
-body.light .aviso-stop { background: rgba(255,68,102,.06); }
-body.light .aviso-meta { background: rgba(0,149,110,.06); }
-body.light .aviso-all4 { background: rgba(176,136,0,.08); }
-body.light .aviso-body { color: #444; }
-body.light .conta-card-stat { background: rgba(0,0,0,.05); }
-body.light .cal-day { background: #EAEAE6; border-color: var(--line); }
-body.light .cal-day:hover { background: #e0e0dc; }
-body.light .cal-header-cell { color: var(--s4); }
+body.light .form-group input:focus,
+body.light .form-group select:focus { border-color: var(--b2); }
+body.light .btn-cancel { background: rgba(0,0,0,.06); border-color: var(--line); color: var(--text); }
+
+/* Misc */
+body.light .section-title { color: var(--s4); }
+body.light .empty-state { color: var(--muted, #888); }
 body {
   font-family:'IBM Plex Mono',monospace;
   background:linear-gradient(160deg,#060a14 0%,#0a0e1a 30%,#0d1220 60%,#080c18 100%);
