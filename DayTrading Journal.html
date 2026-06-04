@@ -14,6 +14,78 @@
   --s3:#7ab0e0; --s4:#a0c4f0; --s5:#c4dcf8;
   --gold:#f0c040; --text:#e8f0f8;
 }
+
+/* ── TEMA CLARO ── */
+body.light {
+  --bg0:#F8F8F6; --bg1:#F0F0ED; --bg2:#EAEAE6; --bg3:#F4F4F1;
+  --line:#d0d0c8; --line2:#c0c0b8;
+  --b2:#00956e; --b3:#007a5a;
+  --s3:#4a7aaa; --s4:#3a6090; --s5:#2a4870;
+  --gold:#b08800; --text:#1a1a14;
+}
+body.light {
+  background: #F8F8F6;
+  background-attachment: fixed;
+  color: #1a1a14;
+}
+body.light ::-webkit-scrollbar-track { background: #F0F0ED; }
+body.light ::-webkit-scrollbar-thumb { background: #c0c0b8; }
+body.light header {
+  background: linear-gradient(90deg, #EAEAE6 0%, #F0F0ED 50%, #EAEAE6 100%);
+  border-bottom: 1px solid var(--line2);
+  box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+body.light .tabs { background: rgba(0,0,0,.05); border-color: var(--line); }
+body.light .tab { color: var(--s4); }
+body.light .tab.active { background: linear-gradient(180deg, #dededb 0%, #ebebE8 100%); color: var(--gold); }
+body.light .fx-badge { background: rgba(0,0,0,.05); border-color: var(--line); }
+body.light .btn-cfg { border-color: var(--line); color: var(--s4); }
+body.light .btn-cfg:hover { border-color: var(--gold); color: var(--gold); }
+body.light .avisos-panel {
+  background: linear-gradient(160deg, #EAEAE6 0%, #F0F0ED 60%, #F8F8F6 100%);
+  border-color: var(--line);
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+body.light .card,
+body.light .kpi,
+body.light .chart-card,
+body.light .conta-card,
+body.light .trades-filters,
+body.light .modal-box {
+  background: linear-gradient(160deg, #EAEAE6 0%, #F0F0ED 50%, #F8F8F6 100%);
+  border-color: var(--line);
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+body.light .kpi:hover, body.light .conta-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+body.light .kpi-brl { border-top-color: var(--line2); }
+body.light .conta-card.meta-ok { border-color: rgba(0,149,110,.4); box-shadow: 0 0 12px rgba(0,149,110,.08); }
+body.light .progress-bar, body.light .conta-progress { background: var(--line); }
+body.light .conta-resumo { background: rgba(0,0,0,.03); border-color: var(--line); }
+body.light .dash-filters select, body.light .trades-filters select {
+  background: linear-gradient(180deg, #EAEAE6 0%, #F8F8F6 100%);
+  border-color: var(--line);
+  color: var(--text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%233a6090' d='M5 7L0 2h10z'/%3E%3C/svg%3E");
+}
+body.light .trade-row { background: rgba(0,0,0,.02); border-color: var(--line); }
+body.light .trade-row:hover { background: rgba(0,0,0,.04); }
+body.light .form-group input,
+body.light .form-group select,
+body.light .form-group textarea {
+  background: #F8F8F6;
+  border-color: var(--line);
+  color: var(--text);
+}
+body.light .modal-overlay { background: rgba(200,200,190,.7); }
+body.light .aviso-ok { background: rgba(0,0,0,.04); }
+body.light .aviso-stop { background: rgba(255,68,102,.06); }
+body.light .aviso-meta { background: rgba(0,149,110,.06); }
+body.light .aviso-all4 { background: rgba(176,136,0,.08); }
+body.light .aviso-body { color: #444; }
+body.light .conta-card-stat { background: rgba(0,0,0,.05); }
+body.light .cal-day { background: #EAEAE6; border-color: var(--line); }
+body.light .cal-day:hover { background: #e0e0dc; }
+body.light .cal-header-cell { color: var(--s4); }
 body {
   font-family:'IBM Plex Mono',monospace;
   background:linear-gradient(160deg,#060a14 0%,#0a0e1a 30%,#0d1220 60%,#080c18 100%);
@@ -456,6 +528,7 @@ select option{background:#0d1220;color:var(--text)}
         <span id="fx-rate">R$ 5.00</span>
       </div>
       <span id="sync-fb" style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:#f0c040;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:rgba(0,0,0,.3)">⏳ conectando...</span>
+      <button id="btn-theme" onclick="toggleTheme()" style="background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;cursor:pointer;transition:all .2s" title="Alternar tema">🌙</button>
       <button class="btn-new" id="btn-new-global">+ novo trade</button>
     </div>
   </div>
@@ -2221,6 +2294,12 @@ function renderCalendario(){
 
 function render(){renderDashboard();renderTable();}
 
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('btn-theme').textContent = isLight ? '☀️' : '🌙';
+  try { localStorage.setItem('dt_theme', isLight ? 'light' : 'dark'); } catch {}
+}
+
 // ── FIREBASE ─────────────────────────────────────────────────────────────────
 const _fbConfig = {
   apiKey: "AIzaSyBdJlBF2WSF6w2lppU1sM4SPh-p6cE-mRA",
@@ -2258,6 +2337,15 @@ function _fbSave() {
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.getElementById("btn-new-global").onclick = () => openForm();
+
+// Aplica tema salvo
+try {
+  if (localStorage.getItem('dt_theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('btn-theme').textContent = '☀️';
+  }
+} catch {}
+
 buildContaSelects(); buildDashContaSelect(); buildAnoSelect(); buildCalContaSelect();
 initCalculadora();
 fetchRate();
@@ -2305,6 +2393,7 @@ Object.assign(window, {
   openForm, submitForm, closeForm, editTrade, confirmDel, doDel,
   buildCalContaSelect, calPrev, calNext, calToday, renderCalendario,
   render,
+  toggleTheme,
 });
 </script>
 
